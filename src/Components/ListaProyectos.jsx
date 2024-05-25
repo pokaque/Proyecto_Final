@@ -170,6 +170,7 @@ const ListaProyectos = () => {
             <Typography variant="h6">Proyectos creados por ti</Typography>
             {successMsg && <Alert severity="success" sx={{ mb: 2 }}>{successMsg}</Alert>}
 
+            {/* Filtros */}
             <Grid container spacing={2} className="lista-proyectos-filtros">
                 <Grid item xs={12} sm={3}><TextField fullWidth label="Buscar por nombre" value={filtroNombre} onChange={(e) => setFiltroNombre(e.target.value)} /></Grid>
                 <Grid item xs={12} sm={3}><TextField select fullWidth label="Área" value={filtroArea} onChange={(e) => setFiltroArea(e.target.value)}><MenuItem value="">Todas</MenuItem><MenuItem value="Ciencias">Ciencias</MenuItem><MenuItem value="Tecnología">Tecnología</MenuItem><MenuItem value="Matemáticas">Matemáticas</MenuItem><MenuItem value="Ciencias Sociales">Ciencias Sociales</MenuItem></TextField></Grid>
@@ -177,11 +178,72 @@ const ListaProyectos = () => {
                 <Grid item xs={12} sm={3}><TextField fullWidth label="Buscar por institución" value={filtroInstitucion} onChange={(e) => setFiltroInstitucion(e.target.value)} /></Grid>
             </Grid>
 
+            {/* Tabla */}
             <Box className="lista-proyectos-grid">
                 <DataGrid rows={filteredProyectos} columns={columns} pageSize={5} rowsPerPageOptions={[5]} sx={{ minWidth: 800, height: 500 }} />
             </Box>
 
-            {/* Diálogos se mantienen sin cambios aquí */}
+            {/* Diálogo de edición */}
+            <Dialog open={openEdit} onClose={() => setOpenEdit(false)} maxWidth="md" fullWidth>
+                <DialogTitle>Editar Proyecto</DialogTitle>
+                <DialogContent>
+                    {selectedProyecto && (
+                        <Box sx={{ mt: 2 }} component="form">
+                            <TextField fullWidth margin="normal" label="Nombre del Proyecto" value={selectedProyecto.nombreProyecto} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, nombreProyecto: e.target.value })} />
+                            <TextField fullWidth margin="normal" label="Descripción" multiline rows={2} value={selectedProyecto.descripcion} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, descripcion: e.target.value })} />
+                            <TextField fullWidth margin="normal" label="Objetivos" multiline rows={2} value={selectedProyecto.objetivos} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, objetivos: e.target.value })} />
+                            <TextField fullWidth margin="normal" label="Institución" value={selectedProyecto.institucion} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, institucion: e.target.value })} />
+                            <TextField fullWidth margin="normal" label="Presupuesto" type="number" value={selectedProyecto.presupuesto} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, presupuesto: e.target.value })} />
+                            <TextField fullWidth margin="normal" label="Observaciones" multiline rows={2} value={selectedProyecto.observaciones} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, observaciones: e.target.value })} />
+                            <TextField fullWidth margin="normal" label="Área de conocimiento" value={selectedProyecto.areaConocimiento} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, areaConocimiento: e.target.value })} />
+                            <TextField fullWidth margin="normal" label="Fecha de inicio" type="date" InputLabelProps={{ shrink: true }} value={selectedProyecto.fechaInicio} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, fechaInicio: e.target.value })} />
+                            
+                            <Typography variant="subtitle1" sx={{ mt: 2 }}>Integrantes</Typography>
+                            {selectedProyecto.integrantes.map((i, idx) => (
+                                <Box key={idx} display="flex" gap={2} alignItems="center" mt={1}>
+                                    <TextField label="Nombre" value={i.nombre} onChange={(e) => handleIntegranteChange(idx, 'nombre', e.target.value)} />
+                                    <TextField label="Apellido" value={i.apellido} onChange={(e) => handleIntegranteChange(idx, 'apellido', e.target.value)} />
+                                    <TextField label="Grado" value={i.grado} onChange={(e) => handleIntegranteChange(idx, 'grado', e.target.value)} />
+                                    <Button color="error" onClick={() => eliminarIntegrante(idx)}>Eliminar</Button>
+                                </Box>
+                            ))}
+                            <Autocomplete
+                                options={estudiantes}
+                                getOptionLabel={(option) => option.nombre}
+                                renderInput={(params) => <TextField {...params} label="Agregar estudiante" />}
+                                onChange={(e, value) => value && agregarIntegrante(value)}
+                                sx={{ mt: 2 }}
+                            />
+                        </Box>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenEdit(false)}>Cancelar</Button>
+                    <Button onClick={handleUpdate} variant="contained">Guardar Cambios</Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Diálogo de detalle */}
+            <Dialog open={openDetalle} onClose={() => setOpenDetalle(false)} maxWidth="md" fullWidth>
+                <DialogTitle>Detalle del Proyecto</DialogTitle>
+                <DialogContent>
+                    {detalleProyecto && (
+                        <Box>
+                            <Typography variant="body1"><strong>Nombre:</strong> {detalleProyecto.nombreProyecto}</Typography>
+                            <Typography variant="body1"><strong>Descripción:</strong> {detalleProyecto.descripcion}</Typography>
+                            <Typography variant="body1"><strong>Objetivos:</strong> {detalleProyecto.objetivos}</Typography>
+                            <Typography variant="body1"><strong>Institución:</strong> {detalleProyecto.institucion}</Typography>
+                            <Typography variant="body1"><strong>Presupuesto:</strong> {detalleProyecto.presupuesto}</Typography>
+                            <Typography variant="body1"><strong>Área:</strong> {detalleProyecto.areaConocimiento}</Typography>
+                            <Typography variant="body1"><strong>Fecha de inicio:</strong> {detalleProyecto.fechaInicio}</Typography>
+                            <Typography variant="body1"><strong>Estado:</strong> {detalleProyecto.estado}</Typography>
+                        </Box>
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setOpenDetalle(false)}>Cerrar</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
