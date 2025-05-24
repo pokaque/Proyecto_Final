@@ -6,7 +6,7 @@ import EstudianteInicio from './Pages/EstudianteInicio';
 import DocenteInicio from './Pages/DocenteInicio';
 import CoordinadorInicio from './Pages/CoordinadorInicio';
 import HitosProyecto from './Pages/HitosProyecto'; // importa la nueva página
-
+import './App.css';
 
 const App = () => (
   <Router>
@@ -18,9 +18,6 @@ const App = () => (
       <Route path="/docente" element={<DocenteInicio />} />
       <Route path="/coordinador" element={<CoordinadorInicio />} />
       <Route path="/proyecto/:id/hitos" element={<HitosProyecto />} />
-  
-
-
     </Routes>
   </Router>
 );

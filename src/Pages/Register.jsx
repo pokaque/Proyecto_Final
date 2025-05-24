@@ -47,8 +47,7 @@ const Register = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        backgroundImage:
-          'url("https://wallpapers.com/images/high/education-background-g7a3du42k0ne87wi.webp")',
+        backgroundImage: 'url("https://wallpapers.com/images/high/education-background-g7a3du42k0ne87wi.webp")',
         backgroundPosition: 'center',
         display: 'flex',
         alignItems: 'center',
@@ -56,9 +55,22 @@ const Register = () => {
         px: 2,
       }}
     >
+      {/* Capa borrosa encima de la imagen */}
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          backdropFilter: 'blur(5px)',
+          backgroundColor: 'rgba(0, 0, 0, 0.67)',
+          zIndex: 1,
+        }}
+      />
+
       <Paper
         elevation={6}
         sx={{
+          position: 'relative',
+          zIndex: 2,
           width: '100%',
           maxWidth: 1000,
           display: 'flex',
@@ -73,6 +85,9 @@ const Register = () => {
             p: 4,
             backgroundColor: 'rgba(0, 0, 0, 0.9)',
             color: 'white',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
           }}
         >
           <Typography variant="h2" gutterBottom>
@@ -83,7 +98,17 @@ const Register = () => {
           </Typography>
         </Box>
 
-        <Box sx={{ flex: 1, p: 4, bgcolor: 'white' }}>
+        <Box
+          sx={{
+            flex: 1,
+            p: 4,
+            bgcolor: 'white',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',  // CENTRAR verticalmente el formulario dentro de este Box
+          }}
+
+        >
           <Typography variant="h5" gutterBottom>Registrarse</Typography>
 
           {error && (
