@@ -36,8 +36,7 @@ Este sistema está diseñado para facilitar la gestión y seguimiento de proyect
 - Generar reportes globales consolidados.
 - Listar proyectos por institución o docente.
 
-## Notas adicionales
-
+> **Notas adicionales**
 - El sistema garantiza que cada rol tenga acceso únicamente a las funcionalidades permitidas, asegurando la integridad y seguridad de la información.
 - Los reportes generados pueden descargarse en formato PDF para facilitar la revisión y archivo.
 - El historial de avances y estados permite un seguimiento transparente y detallado de cada proyecto escolar.

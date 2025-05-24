@@ -32,7 +32,7 @@ const Login = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        backgroundImage: 'url("https://wallpapers.com/images/high/education-background-g7a3du42k0ne87wi.webp")',
+        backgroundImage: 'url("/fondo.png")',
         backgroundPosition: 'center',
         display: 'flex',
         alignItems: 'center',

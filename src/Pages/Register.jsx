@@ -15,7 +15,7 @@ import { auth, db } from '../Firebase/Firebase';
 import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
-  const [nombre, setNombre] = useState(''); // 👈 Campo nuevo
+  const [nombre, setNombre] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [rol, setRol] = useState('estudiante');
@@ -33,7 +33,7 @@ const Register = () => {
         uid: user.uid,
         email,
         rol,
-        nombre, // 👈 Se guarda en Firestore
+        nombre,
       });
 
       alert('Usuario registrado correctamente');
@@ -47,7 +47,7 @@ const Register = () => {
     <Box
       sx={{
         minHeight: '100vh',
-        backgroundImage: 'url("https://wallpapers.com/images/high/education-background-g7a3du42k0ne87wi.webp")',
+        backgroundImage: 'url("/fondo.png")',
         backgroundPosition: 'center',
         display: 'flex',
         alignItems: 'center',

@@ -94,10 +94,9 @@ function EstudianteInicio() {
                 <Box
                   sx={{
                     flex: 1,
-                    backgroundImage: 'url("/img/estudiante-banner.jpg")',
+                    backgroundImage: 'url("/estudiante.png")',
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
-                    minHeight: 300,
                     transition: 'transform 0.3s ease-in-out',
                     '&:hover': {
                       transform: 'scale(1.02)',
@@ -106,9 +105,9 @@ function EstudianteInicio() {
                 />
                 <Box
                   sx={{
-                    flex: 2,
+                    flex: 1,
                     color: 'white',
-                    p: 5,
+                    p: 3,
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'center',
