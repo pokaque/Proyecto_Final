@@ -22,7 +22,9 @@ import {
     TextField,
     MenuItem,
     Tooltip,
-    Alert
+    Alert,
+    Grid,
+    Autocomplete
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -35,29 +37,58 @@ import { generarPDF, generarPDFGeneral } from './GenerarPdfs.jsx';
 const ListaProyectos = () => {
     const navigate = useNavigate();
     const [proyectos, setProyectos] = useState([]);
+    const [filteredProyectos, setFilteredProyectos] = useState([]);
     const [selectedProyecto, setSelectedProyecto] = useState(null);
     const [openEdit, setOpenEdit] = useState(false);
     const [openDetalle, setOpenDetalle] = useState(false);
     const [detalleProyecto, setDetalleProyecto] = useState(null);
     const [successMsg, setSuccessMsg] = useState('');
+    const [estudiantes, setEstudiantes] = useState([]);
 
-    const fetchProyectos = async () => {
-        const proyectosRef = collection(db, 'proyectos');
-        const q = query(proyectosRef, where('creadoPor', '==', auth.currentUser.uid));
-        const snapshot = await getDocs(q);
-        const lista = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-            fechaInicio: doc.data().fechaInicio instanceof Object
-                ? doc.data().fechaInicio.toDate().toISOString().split('T')[0]
-                : '',
-        }));
-        setProyectos(lista);
-    };
+    const [filtroNombre, setFiltroNombre] = useState('');
+    const [filtroArea, setFiltroArea] = useState('');
+    const [filtroEstado, setFiltroEstado] = useState('');
+    const [filtroInstitucion, setFiltroInstitucion] = useState('');
 
     useEffect(() => {
+        const fetchProyectos = async () => {
+            const proyectosRef = collection(db, 'proyectos');
+            const q = query(proyectosRef, where('creadoPor', '==', auth.currentUser.uid));
+            const snapshot = await getDocs(q);
+            const lista = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+                fechaInicio: doc.data().fechaInicio instanceof Object
+                    ? doc.data().fechaInicio.toDate().toISOString().split('T')[0]
+                    : '',
+            }));
+            setProyectos(lista);
+            setFilteredProyectos(lista);
+        };
+
+        const fetchEstudiantes = async () => {
+            const q = query(collection(db, 'users'), where('rol', '==', 'estudiante'));
+            const snapshot = await getDocs(q);
+            const lista = snapshot.docs.map(doc => ({
+                uid: doc.id,
+                nombre: doc.data().nombre,
+                email: doc.data().email
+            }));
+            setEstudiantes(lista);
+        };
+
         fetchProyectos();
+        fetchEstudiantes();
     }, []);
+
+    useEffect(() => {
+        let filtrados = proyectos;
+        if (filtroNombre) filtrados = filtrados.filter(p => p.nombreProyecto.toLowerCase().includes(filtroNombre.toLowerCase()));
+        if (filtroArea) filtrados = filtrados.filter(p => p.areaConocimiento === filtroArea);
+        if (filtroEstado) filtrados = filtrados.filter(p => p.estado === filtroEstado);
+        if (filtroInstitucion) filtrados = filtrados.filter(p => p.institucion.toLowerCase().includes(filtroInstitucion.toLowerCase()));
+        setFilteredProyectos(filtrados);
+    }, [filtroNombre, filtroArea, filtroEstado, filtroInstitucion, proyectos]);
 
     const handleDelete = async (id) => {
         if (window.confirm('¿Estás seguro de eliminar este proyecto?')) {
@@ -83,9 +114,16 @@ const ListaProyectos = () => {
         setSelectedProyecto({ ...selectedProyecto, integrantes: nuevos });
     };
 
-    const agregarIntegrante = () => {
-        const nuevos = [...selectedProyecto.integrantes, { nombre: '', apellido: '', id: '', grado: '' }];
-        setSelectedProyecto({ ...selectedProyecto, integrantes: nuevos });
+    const agregarIntegrante = (estudiante) => {
+        if (!selectedProyecto.integrantes.some(i => i.id === estudiante.uid)) {
+            const nuevos = [...selectedProyecto.integrantes, {
+                nombre: estudiante.nombre,
+                apellido: '',
+                id: estudiante.uid,
+                grado: ''
+            }];
+            setSelectedProyecto({ ...selectedProyecto, integrantes: nuevos });
+        }
     };
 
     const eliminarIntegrante = (index) => {
@@ -106,7 +144,6 @@ const ListaProyectos = () => {
             fechaInicio: new Date(selectedProyecto.fechaInicio),
             integrantes: selectedProyecto.integrantes,
         });
-
         setOpenEdit(false);
         setSuccessMsg('Proyecto actualizado correctamente.');
         fetchProyectos();
@@ -118,46 +155,32 @@ const ListaProyectos = () => {
         { field: 'fechaInicio', headerName: 'Inicio', flex: 1 },
         { field: 'estado', headerName: 'Estado', flex: 1 },
         {
-            field: 'acciones',
-            headerName: 'Acciones',
-            flex: 1,
+            field: 'acciones', headerName: 'Acciones', flex: 1,
             renderCell: (params) => (
                 <>
                     <Tooltip title="Editar">
-                        <IconButton onClick={() => handleEditClick(params.row)}>
-                            <EditIcon />
-                        </IconButton>
+                        <IconButton onClick={() => handleEditClick(params.row)}><EditIcon /></IconButton>
                     </Tooltip>
                     <Tooltip title="Eliminar">
-                        <IconButton color="error" onClick={() => handleDelete(params.row.id)}>
-                            <DeleteIcon />
-                        </IconButton>
+                        <IconButton color="error" onClick={() => handleDelete(params.row.id)}><DeleteIcon /></IconButton>
                     </Tooltip>
                     <Tooltip title="Ver detalles">
-                        <IconButton onClick={() => handleVerDetalle(params.row)}>
-                            <DescriptionIcon />
-                        </IconButton>
+                        <IconButton onClick={() => handleVerDetalle(params.row)}><DescriptionIcon /></IconButton>
                     </Tooltip>
-                    <Tooltip title="Ver avances">
-                        <IconButton onClick={() => navigate(`/proyecto/${params.row.id}/hitos`)}>
-                            <TimelineIcon />
-                        </IconButton>
+                    <Tooltip title="Ver hitos">
+                        <IconButton onClick={() => navigate(`/proyecto/${params.row.id}/hitos`)}><TimelineIcon /></IconButton>
                     </Tooltip>
                     <Tooltip title="Generar PDF">
-                        <IconButton
-                            onClick={async () => {
-                                const ref = collection(db, 'proyectos', params.row.id, 'avances');
-                                const snapshot = await getDocs(ref);
-                                const hitos = snapshot.docs.map(doc => ({
-                                    ...doc.data(),
-                                    fecha: doc.data().fecha?.toDate().toLocaleDateString() || '',
-                                    descripcion: doc.data().descripcion || ''
-                                }));
-                                generarPDF(params.row, hitos);
-                            }}
-                        >
-                            <PictureAsPdfIcon />
-                        </IconButton>
+                        <IconButton onClick={async () => {
+                            const ref = collection(db, 'proyectos', params.row.id, 'avances');
+                            const snapshot = await getDocs(ref);
+                            const hitos = snapshot.docs.map(doc => ({
+                                ...doc.data(),
+                                fecha: doc.data().fecha?.toDate().toLocaleDateString() || '',
+                                descripcion: doc.data().descripcion || ''
+                            }));
+                            generarPDF(params.row, hitos);
+                        }}><PictureAsPdfIcon /></IconButton>
                     </Tooltip>
                 </>
             )
@@ -166,98 +189,73 @@ const ListaProyectos = () => {
 
     return (
         <Box sx={{ mt: 2 }}>
-            <Typography variant="h6" gutterBottom>Proyectos creados por ti</Typography>
+            <Typography variant="h6">Proyectos creados por ti</Typography>
             {successMsg && <Alert severity="success" sx={{ mb: 2 }}>{successMsg}</Alert>}
-            <Box sx={{ height: 500, width: '100%' }}>
-                <DataGrid
-                    rows={proyectos}
-                    columns={columns}
-                    pageSize={5}
-                    rowsPerPageOptions={[5]}
-                />
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                <Button
-                    variant="contained"
-                    startIcon={<PictureAsPdfIcon />}
-                    onClick={() => generarPDFGeneral(proyectos)}
-                >
-                    Descargar PDF general
-                </Button>
-            </Box>
+
+            <Grid container spacing={2} sx={{ mb: 2 }}>
+                <Grid item xs={12} sm={3}><TextField fullWidth label="Buscar por nombre" value={filtroNombre} onChange={(e) => setFiltroNombre(e.target.value)} /></Grid>
+                <Grid item xs={12} sm={3}><TextField select fullWidth label="Área" value={filtroArea} onChange={(e) => setFiltroArea(e.target.value)}><MenuItem value="">Todas</MenuItem><MenuItem value="Ciencias">Ciencias</MenuItem><MenuItem value="Tecnología">Tecnología</MenuItem><MenuItem value="Matemáticas">Matemáticas</MenuItem><MenuItem value="Ciencias Sociales">Ciencias Sociales</MenuItem></TextField></Grid>
+                <Grid item xs={12} sm={3}><TextField select fullWidth label="Estado" value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)}><MenuItem value="">Todos</MenuItem><MenuItem value="Activo">Activo</MenuItem><MenuItem value="Inactivo">Inactivo</MenuItem><MenuItem value="Formulación">Formulación</MenuItem><MenuItem value="Evaluación">Evaluación</MenuItem><MenuItem value="Finalizado">Finalizado</MenuItem></TextField></Grid>
+                <Grid item xs={12} sm={3}><TextField fullWidth label="Buscar por institución" value={filtroInstitucion} onChange={(e) => setFiltroInstitucion(e.target.value)} /></Grid>
+            </Grid>
+
+            <DataGrid rows={filteredProyectos} columns={columns} pageSize={5} rowsPerPageOptions={[5]} sx={{ height: 500 }} />
+
             <Dialog open={openEdit} onClose={() => setOpenEdit(false)} fullWidth>
                 <DialogTitle>Editar Proyecto</DialogTitle>
                 <DialogContent>
-                    <TextField fullWidth label="Nombre del proyecto" margin="normal" value={selectedProyecto?.nombreProyecto || ''} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, nombreProyecto: e.target.value })} />
-                    <TextField fullWidth label="Descripción" margin="normal" multiline rows={3} value={selectedProyecto?.descripcion || ''} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, descripcion: e.target.value })} />
-                    <TextField fullWidth label="Objetivos" margin="normal" multiline rows={3} value={selectedProyecto?.objetivos || ''} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, objetivos: e.target.value })} />
-                    <TextField fullWidth label="Institución" margin="normal" value={selectedProyecto?.institucion || ''} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, institucion: e.target.value })} />
-                    <TextField fullWidth label="Presupuesto estimado" margin="normal" value={selectedProyecto?.presupuesto || ''} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, presupuesto: e.target.value })} />
-                    <TextField fullWidth label="Observaciones" margin="normal" multiline rows={2} value={selectedProyecto?.observaciones || ''} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, observaciones: e.target.value })} />
-                    <TextField select fullWidth label="Área de conocimiento" margin="normal" value={selectedProyecto?.areaConocimiento || ''} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, areaConocimiento: e.target.value })}>
-                        <MenuItem value="Ciencias">Ciencias</MenuItem>
-                        <MenuItem value="Tecnología">Tecnología</MenuItem>
-                        <MenuItem value="Matemáticas">Matemáticas</MenuItem>
-                        <MenuItem value="Ciencias Sociales">Ciencias Sociales</MenuItem>
+                    <TextField fullWidth label="Nombre del proyecto" value={selectedProyecto?.nombreProyecto || ''} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, nombreProyecto: e.target.value })} margin="normal" />
+                    <TextField fullWidth label="Descripción" value={selectedProyecto?.descripcion || ''} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, descripcion: e.target.value })} margin="normal" multiline rows={3} />
+                    <TextField fullWidth label="Objetivos" value={selectedProyecto?.objetivos || ''} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, objetivos: e.target.value })} margin="normal" multiline rows={3} />
+                    <TextField fullWidth label="Institución" value={selectedProyecto?.institucion || ''} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, institucion: e.target.value })} margin="normal" />
+                    <TextField fullWidth label="Presupuesto estimado" value={selectedProyecto?.presupuesto || ''} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, presupuesto: e.target.value })} margin="normal" />
+                    <TextField fullWidth label="Observaciones" value={selectedProyecto?.observaciones || ''} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, observaciones: e.target.value })} margin="normal" multiline rows={2} />
+                    <TextField select fullWidth label="Área de conocimiento" value={selectedProyecto?.areaConocimiento || ''} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, areaConocimiento: e.target.value })} margin="normal">
+                        <MenuItem value="Ciencias">Ciencias</MenuItem><MenuItem value="Tecnología">Tecnología</MenuItem><MenuItem value="Matemáticas">Matemáticas</MenuItem><MenuItem value="Ciencias Sociales">Ciencias Sociales</MenuItem>
                     </TextField>
-                    <TextField fullWidth label="Fecha de inicio" type="date" margin="normal" InputLabelProps={{ shrink: true }} value={selectedProyecto?.fechaInicio || ''} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, fechaInicio: e.target.value })} />
-                    <Typography variant="subtitle1" sx={{ mt: 2 }}>👥 Integrantes del equipo</Typography>
-                    {selectedProyecto?.integrantes?.map((int, index) => (
-                        <Box key={index} sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center' }}>
-                            <TextField label="Nombre" value={int.nombre} onChange={(e) => handleIntegranteChange(index, 'nombre', e.target.value)} size="small" />
-                            <TextField label="Apellido" value={int.apellido} onChange={(e) => handleIntegranteChange(index, 'apellido', e.target.value)} size="small" />
-                            <TextField label="ID" value={int.id} onChange={(e) => handleIntegranteChange(index, 'id', e.target.value)} size="small" />
-                            <TextField label="Grado" value={int.grado} onChange={(e) => handleIntegranteChange(index, 'grado', e.target.value)} size="small" />
-                            {selectedProyecto.integrantes.length > 1 && (
-                                <IconButton color="error" onClick={() => eliminarIntegrante(index)}>
-                                    <DeleteIcon />
-                                </IconButton>
-                            )}
-                        </Box>
-                    ))}
-                    <Button variant="outlined" onClick={agregarIntegrante}>Agregar integrante</Button>
+                    <TextField fullWidth type="date" label="Fecha de inicio" value={selectedProyecto?.fechaInicio || ''} onChange={(e) => setSelectedProyecto({ ...selectedProyecto, fechaInicio: e.target.value })} margin="normal" InputLabelProps={{ shrink: true }} />
+
+                    <Box mt={3}>
+                        <Typography variant="h6" gutterBottom>Agregar estudiante al proyecto</Typography>
+                        <Autocomplete
+                            options={estudiantes}
+                            getOptionLabel={(option) => `${option.nombre} (${option.email})`}
+                            renderInput={(params) => <TextField {...params} label="Buscar estudiante" margin="normal" />}
+                            onChange={(event, value) => value && agregarIntegrante(value)}
+                        />
+
+                        {selectedProyecto?.integrantes?.map((int, index) => (
+                            <Box key={index} sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center' }}>
+                                <TextField label="Nombre" value={int.nombre} disabled size="small" />
+                                <TextField label="ID" value={int.id} disabled size="small" />
+                                <TextField label="Grado" value={int.grado} onChange={(e) => handleIntegranteChange(index, 'grado', e.target.value)} size="small" />
+                                <IconButton color="error" onClick={() => eliminarIntegrante(index)}><DeleteIcon /></IconButton>
+                            </Box>
+                        ))}
+                    </Box>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenEdit(false)}>Cancelar</Button>
                     <Button onClick={handleUpdate} variant="contained">Guardar Cambios</Button>
                 </DialogActions>
             </Dialog>
+
             <Dialog open={openDetalle} onClose={() => setOpenDetalle(false)} fullWidth>
                 <DialogTitle>Detalles del Proyecto</DialogTitle>
                 <DialogContent>
-                    <TextField fullWidth label="Nombre del proyecto" margin="normal" value={detalleProyecto?.nombreProyecto || ''} disabled />
-                    <TextField fullWidth label="Descripción" margin="normal" multiline rows={3} value={detalleProyecto?.descripcion || ''} disabled />
-                    <TextField fullWidth label="Objetivos" margin="normal" multiline rows={2} value={detalleProyecto?.objetivos || ''} disabled />
-                    <TextField fullWidth label="Institución" margin="normal" value={detalleProyecto?.institucion || ''} disabled />
-                    <TextField fullWidth label="Presupuesto" margin="normal" value={detalleProyecto?.presupuesto || ''} disabled />
-                    <TextField fullWidth label="Observaciones" margin="normal" multiline rows={2} value={detalleProyecto?.observaciones || ''} disabled />
-                    <TextField fullWidth label="Área de conocimiento" margin="normal" value={detalleProyecto?.areaConocimiento || ''} disabled />
-                    <TextField fullWidth label="Fecha de inicio" margin="normal" value={detalleProyecto?.fechaInicio || ''} disabled />
-                    <TextField fullWidth label="Estado" margin="normal" value={detalleProyecto?.estado || ''} disabled />
-
-                    {detalleProyecto?.cronogramaURL && (
-                        <Box mt={2}>
-                            <Typography>📎 Cronograma:</Typography>
-                            <a href={detalleProyecto.cronogramaURL} target="_blank" rel="noopener noreferrer">
-                                Ver archivo
-                            </a>
-                        </Box>
-                    )}
-
-                    {detalleProyecto?.integrantes?.length > 0 && (
-                        <Box mt={2}>
-                            <Typography variant="subtitle1">👥 Integrantes del equipo:</Typography>
-                            {detalleProyecto.integrantes.map((int, i) => (
-                                <Typography key={i} variant="body2" sx={{ ml: 2 }}>
-                                    - {int.nombre} {int.apellido} | ID: {int.id} | Grado: {int.grado}
-                                </Typography>
-                            ))}
-                        </Box>
-                    )}
+                    <TextField fullWidth label="Nombre del proyecto" value={detalleProyecto?.nombreProyecto || ''} disabled margin="normal" />
+                    <TextField fullWidth label="Descripción" value={detalleProyecto?.descripcion || ''} disabled margin="normal" multiline rows={3} />
+                    <TextField fullWidth label="Objetivos" value={detalleProyecto?.objetivos || ''} disabled margin="normal" multiline rows={2} />
+                    <TextField fullWidth label="Institución" value={detalleProyecto?.institucion || ''} disabled margin="normal" />
+                    <TextField fullWidth label="Presupuesto" value={detalleProyecto?.presupuesto || ''} disabled margin="normal" />
+                    <TextField fullWidth label="Observaciones" value={detalleProyecto?.observaciones || ''} disabled margin="normal" multiline rows={2} />
+                    <TextField fullWidth label="Área de conocimiento" value={detalleProyecto?.areaConocimiento || ''} disabled margin="normal" />
+                    <TextField fullWidth label="Fecha de inicio" value={detalleProyecto?.fechaInicio || ''} disabled margin="normal" />
+                    <TextField fullWidth label="Estado" value={detalleProyecto?.estado || ''} disabled margin="normal" />
+                    {detalleProyecto?.cronogramaURL && (<Box mt={2}><Typography>📎 Cronograma:</Typography><a href={detalleProyecto.cronogramaURL} target="_blank" rel="noopener noreferrer">Ver archivo</a></Box>)}
+                    {detalleProyecto?.integrantes?.length > 0 && (<Box mt={2}><Typography variant="subtitle1">👥 Integrantes:</Typography>{detalleProyecto.integrantes.map((int, i) => (<Typography key={i} sx={{ ml: 2 }}>- {int.nombre} {int.apellido} | ID: {int.id} | Grado: {int.grado}</Typography>))}</Box>)}
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpenDetalle(false)}>Cerrar</Button>
-                </DialogActions>
+                <DialogActions><Button onClick={() => setOpenDetalle(false)}>Cerrar</Button></DialogActions>
             </Dialog>
         </Box>
     );

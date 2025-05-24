@@ -1,27 +1,30 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
-    Box, Typography, TextField, Button, Alert, IconButton, List, ListItem, ListItemText
+    Box, Typography, TextField, Button, Alert, IconButton, Dialog, DialogTitle,
+    DialogContent, DialogActions, List, ListItem, ListItemText, Stack
 } from '@mui/material';
-import { addDoc, collection, query, where, getDocs, Timestamp, deleteDoc, doc } from 'firebase/firestore';
+import { addDoc, collection, query, where, getDocs, Timestamp, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { db, storage, auth } from '../Firebase/Firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useNavigate } from 'react-router-dom';
+import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
 
 const HitosProyecto = () => {
-
-
-    const { id } = useParams(); // ID del proyecto
+    const { id } = useParams();
+    const navigate = useNavigate();
     const [titulo, setTitulo] = useState('');
     const [descripcion, setDescripcion] = useState('');
     const [fecha, setFecha] = useState('');
     const [archivo, setArchivo] = useState(null);
+    const [evidencias, setEvidencias] = useState([]);
     const [hitos, setHitos] = useState([]);
     const [exito, setExito] = useState('');
     const [error, setError] = useState('');
-    const navigate = useNavigate();
+    const [openDialog, setOpenDialog] = useState(false);
+    const [editandoId, setEditandoId] = useState(null);
+
     const cargarHitos = async () => {
         const q = query(collection(db, 'hitos'), where('proyectoId', '==', id));
         const snap = await getDocs(q);
@@ -34,12 +37,12 @@ const HitosProyecto = () => {
     }, [id]);
 
     const subirArchivo = async (file) => {
-        const archivoRef = ref(storage, `hitos/${file.name}`);
+        const archivoRef = ref(storage, `hitos/${Date.now()}_${file.name}`);
         await uploadBytes(archivoRef, file);
         return await getDownloadURL(archivoRef);
     };
 
-    const handleCrearHito = async (e) => {
+    const handleGuardarHito = async (e) => {
         e.preventDefault();
         setExito('');
         setError('');
@@ -50,28 +53,43 @@ const HitosProyecto = () => {
         }
 
         try {
-            let url = '';
-            if (archivo) {
-                url = await subirArchivo(archivo);
+            const urls = [];
+            for (const file of evidencias) {
+                const url = await subirArchivo(file);
+                urls.push(url);
             }
 
-            await addDoc(collection(db, 'hitos'), {
-                proyectoId: id,
-                titulo,
-                descripcion,
-                fecha: Timestamp.fromDate(new Date(fecha)),
-                evidenciaURL: url,
-                creadoPor: auth.currentUser.uid
-            });
+            if (editandoId) {
+                const ref = doc(db, 'hitos', editandoId);
+                await updateDoc(ref, {
+                    titulo,
+                    descripcion,
+                    fecha: Timestamp.fromDate(new Date(fecha)),
+                    evidenciasURL: urls
+                });
+                setExito('Avance actualizado correctamente.');
+            } else {
+                await addDoc(collection(db, 'hitos'), {
+                    proyectoId: id,
+                    titulo,
+                    descripcion,
+                    fecha: Timestamp.fromDate(new Date(fecha)),
+                    evidenciasURL: urls,
+                    creadoPor: auth.currentUser.uid
+                });
+                setExito('Avance registrado correctamente.');
+            }
 
             setTitulo('');
             setDescripcion('');
             setFecha('');
             setArchivo(null);
-            setExito('Avance registrado correctamente.');
+            setEvidencias([]);
+            setEditandoId(null);
+            setOpenDialog(false);
             cargarHitos();
         } catch (err) {
-            setError('Error al registrar avance: ' + err.message);
+            setError('Error al guardar avance: ' + err.message);
         }
     };
 
@@ -82,58 +100,73 @@ const HitosProyecto = () => {
         }
     };
 
+    const editarHito = (hito) => {
+        setTitulo(hito.titulo);
+        setDescripcion(hito.descripcion);
+        setFecha(hito.fecha.toDate().toISOString().split('T')[0]);
+        setEditandoId(hito.id);
+        setArchivo(null);
+        setEvidencias([]);
+        setOpenDialog(true);
+    };
+
     return (
-
         <Box sx={{ p: 3 }}>
-            <Typography variant="h5" gutterBottom>Registro de Avances del Proyecto</Typography>
-            {exito && <Alert severity="success">{exito}</Alert>}
-            {error && <Alert severity="error">{error}</Alert>}
+            <Typography variant="h5" gutterBottom>Avances del Proyecto</Typography>
+            {exito && <Alert severity="success" sx={{ mb: 2 }}>{exito}</Alert>}
+            {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-            <Box component="form" onSubmit={handleCrearHito} sx={{ mt: 2 }}>
-                <TextField fullWidth label="Título del avance" value={titulo} onChange={(e) => setTitulo(e.target.value)} margin="normal" required />
-                <TextField fullWidth label="Descripción" multiline rows={3} value={descripcion} onChange={(e) => setDescripcion(e.target.value)} margin="normal" required />
-                <TextField fullWidth type="date" label="Fecha" InputLabelProps={{ shrink: true }} value={fecha} onChange={(e) => setFecha(e.target.value)} margin="normal" required />
-                <Typography mt={2}>📎 Subir evidencia (opcional):</Typography>
-                <input type="file" onChange={(e) => setArchivo(e.target.files[0])} accept=".pdf,image/*" />
-
-                <Button type="submit" variant="contained" sx={{ mt: 2 }}>Registrar Avance</Button>
-                <Button
-                    variant="contained"
-                    startIcon={<ArrowBackIcon />}
-                    onClick={() => navigate('/docente')}
-                    sx={{ mt: 2 }}>
-                    Volver al panel
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenDialog(true)}>
+                    Registrar nuevo avance
                 </Button>
             </Box>
 
-            <Box mt={4}>
-                <Typography variant="h6">Avances registrados</Typography>
-                <List>
-                    {hitos.map((hito) => (
-                        <ListItem key={hito.id} secondaryAction={
-                            <IconButton edge="end" color="error" onClick={() => eliminarHito(hito.id)}>
-                                <DeleteIcon />
-                            </IconButton>
-                        }>
-                            <ListItemText
-                                primary={`${hito.titulo} - ${hito.fecha.toDate().toLocaleDateString()}`}
-                                secondary={
-                                    <>
-                                        {hito.descripcion}
-                                        {hito.evidenciaURL && (
-                                            <><br /><a href={hito.evidenciaURL} target="_blank" rel="noopener noreferrer">Ver evidencia</a></>
-                                        )}
-                                    </>
-                                }
-                            />
-                        </ListItem>
-                    ))}
-                </List>
+            <List sx={{ border: '1px solid #ddd', borderRadius: 2 }}>
+                {hitos.map((hito) => (
+                    <ListItem
+                        key={hito.id}
+                        secondaryAction={
+                            <Stack direction="row" spacing={1}>
+                                <IconButton edge="end" color="primary" onClick={() => editarHito(hito)}>
+                                    <EditIcon />
+                                </IconButton>
+                                <IconButton edge="end" color="error" onClick={() => eliminarHito(hito.id)}>
+                                    <DeleteIcon />
+                                </IconButton>
+                            </Stack>
+                        }
+                    >
+                        <ListItemText
+                            primary={<strong>{hito.titulo} - {hito.fecha.toDate().toLocaleDateString()}</strong>}
+                            secondary={
+                                <>
+                                    {hito.descripcion}<br />
+                                    {hito.evidenciasURL?.map((url, i) => (
+                                        <div key={i}><a href={url} target="_blank" rel="noopener noreferrer">📎 Evidencia {i + 1}</a></div>
+                                    ))}
+                                </>
+                            }
+                        />
+                    </ListItem>
+                ))}
+            </List>
 
-            </Box>
-
+            <Dialog open={openDialog} onClose={() => { setOpenDialog(false); setEditandoId(null); }} fullWidth>
+                <DialogTitle>{editandoId ? 'Editar avance' : 'Registrar nuevo avance'}</DialogTitle>
+                <DialogContent>
+                    <TextField fullWidth label="Título del avance" value={titulo} onChange={(e) => setTitulo(e.target.value)} margin="normal" required />
+                    <TextField fullWidth label="Descripción" multiline rows={3} value={descripcion} onChange={(e) => setDescripcion(e.target.value)} margin="normal" required />
+                    <TextField fullWidth type="date" label="Fecha" InputLabelProps={{ shrink: true }} value={fecha} onChange={(e) => setFecha(e.target.value)} margin="normal" required />
+                    <Typography mt={2}>Subir evidencias (documentos o fotos):</Typography>
+                    <input type="file" multiple onChange={(e) => setEvidencias(Array.from(e.target.files))} accept=".pdf,image/*" />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => { setOpenDialog(false); setEditandoId(null); }}>Cancelar</Button>
+                    <Button onClick={handleGuardarHito} variant="contained">{editandoId ? 'Actualizar' : 'Registrar'}</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
-
     );
 };
 
