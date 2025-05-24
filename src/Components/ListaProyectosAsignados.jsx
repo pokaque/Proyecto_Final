@@ -12,7 +12,12 @@ import {
   TextField,
   Grid,
   Tooltip,
-  IconButton
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button
 } from '@mui/material';
 import DescriptionIcon from '@mui/icons-material/Description';
 import TimelineIcon from '@mui/icons-material/Timeline';
@@ -26,23 +31,29 @@ const ListaProyectoEstudiante = () => {
   const [filteredProyectos, setFilteredProyectos] = useState([]);
   const [filtroNombre, setFiltroNombre] = useState('');
   const [filtroInstitucion, setFiltroInstitucion] = useState('');
+  const [openDetalle, setOpenDetalle] = useState(false);
+  const [detalleProyecto, setDetalleProyecto] = useState(null);
 
   const fetchProyectos = async () => {
-  const snapshot = await getDocs(collection(db, 'proyectos'));
-  const uid = auth.currentUser?.uid;
+    const snapshot = await getDocs(collection(db, 'proyectos'));
+    const uid = auth.currentUser?.uid;
 
-  const asignados = snapshot.docs
-    .map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      fechaInicio: doc.data().fechaInicio?.toDate().toISOString().split('T')[0] || '',
-    }))
-    .filter(p => Array.isArray(p.integrantes) && p.integrantes.some(i => i.id === uid));
+    const asignados = snapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        fechaInicio: doc.data().fechaInicio?.toDate().toISOString().split('T')[0] || '',
+      }))
+      .filter(p => Array.isArray(p.integrantes) && p.integrantes.some(i => i.id === uid));
 
-  setProyectos(asignados);
-  setFilteredProyectos(asignados);
-};
+    setProyectos(asignados);
+    setFilteredProyectos(asignados);
+  };
 
+  const handleVerDetalle = (row) => {
+    setDetalleProyecto(row);
+    setOpenDetalle(true);
+  };
 
   useEffect(() => {
     fetchProyectos();
@@ -72,7 +83,7 @@ const ListaProyectoEstudiante = () => {
       renderCell: (params) => (
         <>
           <Tooltip title="Ver detalles">
-            <IconButton onClick={() => navigate(`/proyecto/${params.row.id}/detalle`)}>
+            <IconButton onClick={() => handleVerDetalle(params.row)}>
               <DescriptionIcon />
             </IconButton>
           </Tooltip>
@@ -102,8 +113,6 @@ const ListaProyectoEstudiante = () => {
 
   return (
     <Box sx={{ mt: 2 }}>
-      <Typography variant="h6">Mis Proyectos Asignados</Typography>
-
       <Grid container spacing={2} sx={{ mb: 2 }}>
         <Grid item xs={12} sm={6}>
           <TextField fullWidth label="Buscar por nombre" value={filtroNombre} onChange={(e) => setFiltroNombre(e.target.value)} />
@@ -120,6 +129,88 @@ const ListaProyectoEstudiante = () => {
         rowsPerPageOptions={[5]}
         sx={{ height: 500 }}
       />
+
+      {/* Modal de detalles del proyecto */}
+      <Dialog open={openDetalle} onClose={() => setOpenDetalle(false)} fullWidth>
+        <DialogTitle>Detalles del Proyecto</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            label="Nombre del proyecto"
+            value={detalleProyecto?.nombreProyecto || ''}
+            disabled
+            margin="normal"
+          />
+          <TextField
+            fullWidth
+            label="Descripción"
+            value={detalleProyecto?.descripcion || ''}
+            disabled
+            margin="normal"
+            multiline
+            rows={3}
+          />
+          <TextField
+            fullWidth
+            label="Objetivos"
+            value={detalleProyecto?.objetivos || ''}
+            disabled
+            margin="normal"
+            multiline
+            rows={2}
+          />
+          <TextField
+            fullWidth
+            label="Institución"
+            value={detalleProyecto?.institucion || ''}
+            disabled
+            margin="normal"
+          />
+          <TextField
+            fullWidth
+            label="Observaciones"
+            value={detalleProyecto?.observaciones || ''}
+            disabled
+            margin="normal"
+            multiline
+            rows={2}
+          />
+          <TextField
+            fullWidth
+            label="Área de conocimiento"
+            value={detalleProyecto?.areaConocimiento || ''}
+            disabled
+            margin="normal"
+          />
+          <TextField
+            fullWidth
+            label="Fecha de inicio"
+            value={detalleProyecto?.fechaInicio || ''}
+            disabled
+            margin="normal"
+          />
+          <TextField
+            fullWidth
+            label="Estado"
+            value={detalleProyecto?.estado || ''}
+            disabled
+            margin="normal"
+          />
+
+          {/* Cronograma si existe */}
+          {detalleProyecto?.cronogramaURL && (
+            <Box mt={2}>
+              <Typography>📎 Cronograma:</Typography>
+              <a href={detalleProyecto.cronogramaURL} target="_blank" rel="noopener noreferrer">
+                Ver archivo
+              </a>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenDetalle(false)}>Cerrar</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
