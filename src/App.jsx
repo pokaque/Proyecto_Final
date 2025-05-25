@@ -5,7 +5,8 @@ import Register from './Pages/Register';
 import EstudianteInicio from './Pages/EstudianteInicio';
 import DocenteInicio from './Pages/DocenteInicio';
 import CoordinadorInicio from './Pages/CoordinadorInicio';
-import HitosProyecto from './Pages/HitosProyecto'; // importa la nueva página
+import HitosProyecto from './Pages/HitosProyecto';
+import CompletarRegistro from './Pages/CompletarRegistro';
 import './App.css';
 
 const App = () => (
@@ -18,6 +19,8 @@ const App = () => (
       <Route path="/docente" element={<DocenteInicio />} />
       <Route path="/coordinador" element={<CoordinadorInicio />} />
       <Route path="/proyecto/:id/hitos" element={<HitosProyecto />} />
+      <Route path="/completar-registro" element={<CompletarRegistro />} />
+
     </Routes>
   </Router>
 );

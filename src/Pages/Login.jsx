@@ -5,6 +5,8 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../Firebase/Firebase';
 import { useNavigate } from 'react-router-dom';
+import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import GoogleIcon from '@mui/icons-material/Google';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -25,6 +27,32 @@ const Login = () => {
       else navigate('/estudiante');
     } catch (error) {
       setError('Error al iniciar sesión Usuario o Contraseña Incorrecta: ');
+    }
+  };
+  const handleGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const uid = result.user.uid;
+      const userDoc = await getDoc(doc(db, 'users', uid));
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        if (userData.rol === 'coordinador') navigate('/coordinador');
+        else if (userData.rol === 'docente') navigate('/docente');
+        else navigate('/estudiante');
+      } else {
+        // Usuario nuevo, redirigir a completar registro
+        navigate('/completar-registro', {
+          state: {
+            uid,
+            email: result.user.email,
+            nombre: result.user.displayName,
+          },
+        });
+      }
+    } catch (error) {
+      setError('Error al iniciar sesión con Google.');
     }
   };
 
@@ -115,6 +143,39 @@ const Login = () => {
             />
             <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>Ingresar</Button>
           </form>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              mt: 3,
+              mb: 2,
+            }}
+          >
+            <Box sx={{ flex: 1, height: '1px', backgroundColor: 'gray' }} />
+            <Typography sx={{ px: 2, color: 'gray' }}>o</Typography>
+            <Box sx={{ flex: 1, height: '1px', backgroundColor: 'gray' }} />
+          </Box>
+
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <Button
+              variant="outlined"
+              color="info"
+              onClick={handleGoogleLogin}
+              sx={{
+                borderRadius: 2,
+              }}
+            >
+              <GoogleIcon />
+            </Button>
+
+          </Box>
+
 
           <Box mt={2} textAlign="center">
             <MuiLink href="/registro" underline="hover">¿No tienes cuenta? Regístrate</MuiLink>
