@@ -1,4 +1,3 @@
-// // src/Pages/Login.jsx
 import React, { useState } from 'react';
 import { Box, Typography, TextField, Button, Paper, Link as MuiLink, Alert } from '@mui/material'; // Se agregó Alert
 import { signInWithEmailAndPassword } from 'firebase/auth';

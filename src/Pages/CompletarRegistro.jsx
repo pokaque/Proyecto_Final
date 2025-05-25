@@ -68,7 +68,6 @@ const CompletarRegistro = () => {
                                 onChange={(e) => setRol(e.target.value)}
                                 required
                             >
-                                <MenuItem value="coordinador">Coordinador</MenuItem>
                                 <MenuItem value="docente">Docente</MenuItem>
                                 <MenuItem value="estudiante">Estudiante</MenuItem>
                             </TextField>
