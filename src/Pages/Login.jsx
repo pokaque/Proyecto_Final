@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { Box, Typography, TextField, Button, Paper, Link as MuiLink, Alert } from '@mui/material';
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../Firebase/Firebase';
 import { useNavigate } from 'react-router-dom';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import GoogleIcon from '@mui/icons-material/Google';
 
 const Login = () => {
@@ -24,32 +23,6 @@ const Login = () => {
       redirectByRole(userData?.rol);
     } catch (error) {
       setError('Usuario o contraseña incorrecta.');
-    }
-  };
-  const handleGoogleLogin = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const uid = result.user.uid;
-      const userDoc = await getDoc(doc(db, 'users', uid));
-
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        if (userData.rol === 'coordinador') navigate('/coordinador');
-        else if (userData.rol === 'docente') navigate('/docente');
-        else navigate('/estudiante');
-      } else {
-        // Usuario nuevo, redirigir a completar registro
-        navigate('/completar-registro', {
-          state: {
-            uid,
-            email: result.user.email,
-            nombre: result.user.displayName,
-          },
-        });
-      }
-    } catch (error) {
-      setError('Error al iniciar sesión con Google.');
     }
   };
 
@@ -83,18 +56,6 @@ const Login = () => {
       setError('Error al iniciar sesión con Google.');
     }
   };
-
-  // const handleFacebookLogin = async () => {
-  //   try {
-  //     setError('');
-  //     const result = await signInWithPopup(auth, new FacebookAuthProvider());
-  //     const userDoc = await createUserIfNotExists(result.user);
-  //     const userData = userDoc.data();
-  //     redirectByRole(userData?.rol);
-  //   } catch (error) {
-  //     setError('Error al iniciar sesión con Facebook.');
-  //   }
-  // };
 
   return (
     <Box
@@ -174,6 +135,7 @@ const Login = () => {
               Ingresar
             </Button>
           </form>
+
           <Box
             sx={{
               display: 'flex',
@@ -187,34 +149,23 @@ const Login = () => {
             <Box sx={{ flex: 1, height: '1px', backgroundColor: 'gray' }} />
           </Box>
 
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
+          <Box sx={{ display: 'flex', justifyContent: 'center' }}>
             <Button
               variant="outlined"
               color="info"
               onClick={handleGoogleLogin}
-              sx={{
-                borderRadius: 2,
-              }}
+              sx={{ borderRadius: 2 }}
             >
               <GoogleIcon />
             </Button>
-
           </Box>
 
 
-          <Button onClick={handleGoogleLogin} variant="outlined" fullWidth sx={{ mt: 2 }}>
-            Iniciar sesión con Google
-          </Button>
-
-          {/* <Button onClick={handleFacebookLogin} variant="outlined" fullWidth sx={{ mt: 1 }}>
+          {/* Facebook login desactivado por ahora
+          <Button onClick={handleFacebookLogin} variant="outlined" fullWidth sx={{ mt: 1 }}>
             Iniciar sesión con Facebook
-          </Button> */}
+          </Button>
+          */}
 
           <Box mt={2} textAlign="center">
             <MuiLink href="/registro" underline="hover">
