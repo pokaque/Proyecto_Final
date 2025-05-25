@@ -4,8 +4,9 @@ import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../Firebase/Firebase';
 import { useNavigate } from 'react-router-dom';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, GithubAuthProvider } from 'firebase/auth';
 import GoogleIcon from '@mui/icons-material/Google';
+import GitHubIcon from '@mui/icons-material/GitHub';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -52,6 +53,34 @@ const Login = () => {
       }
     } catch (error) {
       setError('Error al iniciar sesión con Google.');
+    }
+  };
+
+  const handleGitHubLogin = async () => {
+    const provider = new GithubAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const uid = result.user.uid;
+      const userDoc = await getDoc(doc(db, 'users', uid));
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        if (userData.rol === 'coordinador') navigate('/coordinador');
+        else if (userData.rol === 'docente') navigate('/docente');
+        else navigate('/estudiante');
+      } else {
+        // Usuario nuevo, redirigir a completar registro
+        navigate('/completar-registro', {
+          state: {
+            uid,
+            email: result.user.email,
+            nombre: result.user.displayName,
+          },
+        });
+      }
+    } catch (error) {
+      setError('Error al iniciar sesión con GitHub.');
+      console.error(error);
     }
   };
 
@@ -160,6 +189,7 @@ const Login = () => {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
+            gap: 3,
             }}
           >
             <Button
@@ -173,6 +203,16 @@ const Login = () => {
               <GoogleIcon />
             </Button>
 
+            <Button
+              variant="outlined"
+              color="info"
+              onClick={handleGitHubLogin}
+              sx={{
+                borderRadius: 2,
+              }}
+            >
+              <GitHubIcon />
+            </Button>
           </Box>
 
 
