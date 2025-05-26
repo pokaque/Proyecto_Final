@@ -7,9 +7,7 @@ import {
   doc,
   setDoc,
 } from 'firebase/firestore';
-import {
-  createUserWithEmailAndPassword
-} from 'firebase/auth';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { db, auth } from '../Firebase/Firebase';
 import {
   Box,
@@ -30,6 +28,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
+import './ListaUsuarios.css';
 
 const ListaUsuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
@@ -176,13 +175,13 @@ const ListaUsuarios = () => {
   ];
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Typography variant="h6" gutterBottom>Usuarios Registrados</Typography>
+    <Box className="lista-usuarios-container">
+      <Typography variant="h6" className="lista-usuarios-header">Usuarios Registrados</Typography>
 
       {successMsg && <Alert severity="success" sx={{ mb: 2 }}>{successMsg}</Alert>}
       {errorMsg && <Alert severity="error" sx={{ mb: 2 }}>{errorMsg}</Alert>}
 
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+      <Box className="lista-usuarios-toolbar">
         <Button
           variant="contained"
           startIcon={<AddIcon />}
@@ -192,7 +191,7 @@ const ListaUsuarios = () => {
         </Button>
       </Box>
 
-      <Box sx={{ height: 500, width: '100%' }}>
+      <Box className="lista-usuarios-grid">
         <DataGrid
           rows={usuarios}
           columns={columns}
@@ -201,7 +200,6 @@ const ListaUsuarios = () => {
         />
       </Box>
 
-      {/* Modal Crear Usuario */}
       <Dialog open={openCrear} onClose={() => setOpenCrear(false)} fullWidth>
         <DialogTitle>Crear nuevo usuario</DialogTitle>
         <DialogContent>
@@ -220,7 +218,6 @@ const ListaUsuarios = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Modal Editar Usuario */}
       <Dialog open={openEditar} onClose={() => setOpenEditar(false)} fullWidth>
         <DialogTitle>Editar usuario</DialogTitle>
         <DialogContent>

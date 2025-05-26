@@ -1,0 +1,29 @@
+.lista-usuarios-container {
+  margin-top: 16px;
+  padding: 16px;
+}
+
+.lista-usuarios-header {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lista-usuarios-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.lista-usuarios-grid {
+  width: 100%;
+  overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+  .lista-usuarios-grid .MuiDataGrid-root {
+    min-width: 600px;
+  }
+}
+

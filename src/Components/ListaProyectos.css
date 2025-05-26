@@ -1,0 +1,23 @@
+.lista-proyectos-container {
+  margin-top: 16px;
+  padding: 16px;
+}
+
+.lista-proyectos-filtros {
+  margin-bottom: 16px;
+}
+
+.lista-proyectos-grid {
+  width: 100%;
+  overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+  .lista-proyectos-filtros {
+    text-align: center;
+  }
+
+  .lista-proyectos-grid .MuiDataGrid-root {
+    min-width: 800px;
+  }
+}

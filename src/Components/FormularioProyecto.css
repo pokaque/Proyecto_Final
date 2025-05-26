@@ -1,0 +1,18 @@
+.formulario-proyecto {
+  padding: 16px;
+  max-width: 900px;
+  margin: auto;
+}
+
+.formulario-proyecto-integrante {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+  .formulario-proyecto-integrante {
+    flex-direction: column;
+  }
+}

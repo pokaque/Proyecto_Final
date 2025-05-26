@@ -1,0 +1,47 @@
+/* Contenedor general del componente */
+.lista-proyectos-container {
+  margin-top: 16px;
+  padding: 16px;
+}
+
+/* Título principal */
+.lista-proyectos-header {
+  margin-bottom: 16px;
+}
+
+/* Filtros de búsqueda */
+.lista-proyectos-filtros {
+  margin-bottom: 16px;
+}
+
+/* Botón de exportación PDF */
+.lista-proyectos-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+/* Tabla con scroll horizontal en móviles */
+.lista-proyectos-grid {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* Responsividad */
+@media (max-width: 768px) {
+  .lista-proyectos-toolbar {
+    justify-content: center;
+  }
+
+  .lista-proyectos-filtros {
+    text-align: center;
+  }
+
+  .lista-proyectos-header {
+    text-align: center;
+  }
+
+  .lista-proyectos-grid .MuiDataGrid-root {
+    min-width: 700px;
+  }
+}

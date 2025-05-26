@@ -13,6 +13,7 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../Firebase/Firebase';
 import { useNavigate } from 'react-router-dom';
+import './Register.css';
 
 const Register = () => {
   const [nombre, setNombre] = useState('');
@@ -44,52 +45,10 @@ const Register = () => {
   };
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        backgroundImage: 'url("/fondo.png")',
-        backgroundPosition: 'center',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        px: 2,
-      }}
-    >
-      {/* Capa borrosa encima de la imagen */}
-      <Box
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          backdropFilter: 'blur(5px)',
-          backgroundColor: 'rgba(0, 0, 0, 0.67)',
-          zIndex: 1,
-        }}
-      />
-
-      <Paper
-        elevation={6}
-        sx={{
-          position: 'relative',
-          zIndex: 2,
-          width: '100%',
-          maxWidth: 1000,
-          display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          overflow: 'hidden',
-          borderRadius: 3,
-        }}
-      >
-        <Box
-          sx={{
-            flex: 1,
-            p: 4,
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            color: 'white',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-          }}
-        >
+    <Box className="register-container">
+      <Box className="register-blur-layer" />
+      <Paper className="register-paper" elevation={6}>
+        <Box className="register-left">
           <Typography variant="h2" gutterBottom>
             Únete a la plataforma
           </Typography>
@@ -98,18 +57,10 @@ const Register = () => {
           </Typography>
         </Box>
 
-        <Box
-          sx={{
-            flex: 1,
-            p: 4,
-            bgcolor: 'white',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',  // CENTRAR verticalmente el formulario dentro de este Box
-          }}
-
-        >
-          <Typography variant="h5" gutterBottom>Registrarse</Typography>
+        <Box className="register-right">
+          <Typography variant="h5" gutterBottom>
+            Registrarse
+          </Typography>
 
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -180,4 +131,4 @@ const Register = () => {
   );
 };
 
-export default Register
+export default Register;

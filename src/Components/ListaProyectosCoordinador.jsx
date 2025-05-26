@@ -1,35 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import {
-    collection,
-    getDocs,
-    updateDoc,
-    doc,
-    addDoc,
-    query,
-    orderBy,
+  collection, getDocs, updateDoc, doc, addDoc, query, orderBy
 } from 'firebase/firestore';
 import {
-  Box,
-  Typography,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  MenuItem,
-  Tooltip,
-  Alert,
-  Grid
+  Box, Typography, IconButton, Dialog, DialogTitle, DialogContent, DialogActions,
+  Button, TextField, MenuItem, Tooltip, Alert, Grid
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import AssignmentTurnedInIcon from '@mui/icons-material/AssignmentTurnedIn';
 import DescriptionIcon from '@mui/icons-material/Description';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import { db } from '../Firebase/Firebase';
-import { auth } from '../Firebase/Firebase';
+import { db, auth } from '../Firebase/Firebase';
 import { generarPDFGeneral } from './GenerarPdfs';
+import './ListaProyectosCoordinador.css'; // ✅ Estilos responsivos externos
+import HistoryIcon from '@mui/icons-material/History';
 
 const ListaProyectosCoordinador = () => {
   const [proyectos, setProyectos] = useState([]);
@@ -50,6 +34,7 @@ const ListaProyectosCoordinador = () => {
   const [filtroEstado, setFiltroEstado] = useState('');
   const [filtroInstitucion, setFiltroInstitucion] = useState('');
 
+  // 🔄 Cargar proyectos al iniciar
   const fetchProyectos = async () => {
     try {
       const snapshot = await getDocs(collection(db, 'proyectos'));
@@ -69,12 +54,17 @@ const ListaProyectosCoordinador = () => {
     fetchProyectos();
   }, []);
 
+  // 🔍 Filtro múltiple en tiempo real
   useEffect(() => {
     let filtrados = proyectos;
-    if (filtroNombre) filtrados = filtrados.filter(p => p.nombreProyecto?.toLowerCase().includes(filtroNombre.toLowerCase()));
-    if (filtroArea) filtrados = filtrados.filter(p => p.areaConocimiento === filtroArea);
-    if (filtroEstado) filtrados = filtrados.filter(p => p.estado === filtroEstado);
-    if (filtroInstitucion) filtrados = filtrados.filter(p => p.institucion?.toLowerCase().includes(filtroInstitucion.toLowerCase()));
+    if (filtroNombre)
+      filtrados = filtrados.filter(p => p.nombreProyecto?.toLowerCase().includes(filtroNombre.toLowerCase()));
+    if (filtroArea)
+      filtrados = filtrados.filter(p => p.areaConocimiento === filtroArea);
+    if (filtroEstado)
+      filtrados = filtrados.filter(p => p.estado === filtroEstado);
+    if (filtroInstitucion)
+      filtrados = filtrados.filter(p => p.institucion?.toLowerCase().includes(filtroInstitucion.toLowerCase()));
     setFilteredProyectos(filtrados);
   }, [filtroNombre, filtroArea, filtroEstado, filtroInstitucion, proyectos]);
 
@@ -113,10 +103,10 @@ const ListaProyectosCoordinador = () => {
       const historialRef = collection(ref, 'historialEstados');
       await addDoc(historialRef, {
         estadoAnterior: proyectoSeleccionado.estado,
-        nuevoEstado: nuevoEstado,
-        observacion: observacion,
+        nuevoEstado,
+        observacion,
         fechaCambio: new Date(),
-        realizadoPor: auth.currentUser?.uid || 'desconocido'
+        realizadoPor: auth.currentUser?.uid || 'desconocido',
       });
       await updateDoc(ref, {
         estado: nuevoEstado,
@@ -145,6 +135,9 @@ const ListaProyectosCoordinador = () => {
       field: 'acciones',
       headerName: 'Acciones',
       flex: 1,
+      minWidth: 200, // ✅ asegura quepan los 3 botones
+      disableColumnMenu: true, // ✅ elimina el menú de los 3 puntos
+      sortable: false, // ✅ opcional: desactiva ordenamiento innecesario
       renderCell: (params) => (
         <>
           <Tooltip title="Cambiar estado">
@@ -154,7 +147,7 @@ const ListaProyectosCoordinador = () => {
           </Tooltip>
           <Tooltip title="Ver historial">
             <IconButton onClick={() => abrirHistorial(params.row)}>
-              📜
+              <HistoryIcon />
             </IconButton>
           </Tooltip>
           <Tooltip title="Ver detalles">
@@ -167,20 +160,45 @@ const ListaProyectosCoordinador = () => {
     },
   ];
 
+
   return (
-    <Box sx={{ mt: 2 }}>
-      <Typography variant="h6" gutterBottom>Gestión de Proyectos</Typography>
+    <Box className="lista-proyectos-container">
+      <Typography variant="h4" className="lista-proyectos-header">Gestión de Proyectos</Typography>
+
       {successMsg && <Alert severity="success" sx={{ mb: 2 }}>{successMsg}</Alert>}
       {errorMsg && <Alert severity="error" sx={{ mb: 2 }}>{errorMsg}</Alert>}
 
-      <Grid container spacing={2} sx={{ mb: 2 }}>
-        <Grid item xs={12} sm={3}><TextField fullWidth label="Buscar por nombre" value={filtroNombre} onChange={(e) => setFiltroNombre(e.target.value)} /></Grid>
-        <Grid item xs={12} sm={3}><TextField select fullWidth label="Área" value={filtroArea} onChange={(e) => setFiltroArea(e.target.value)}><MenuItem value="">Todas</MenuItem><MenuItem value="Ciencias">Ciencias</MenuItem><MenuItem value="Tecnología">Tecnología</MenuItem><MenuItem value="Matemáticas">Matemáticas</MenuItem><MenuItem value="Ciencias Sociales">Ciencias Sociales</MenuItem></TextField></Grid>
-        <Grid item xs={12} sm={3}><TextField select fullWidth label="Estado" value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)}><MenuItem value="">Todos</MenuItem><MenuItem value="Activo">Activo</MenuItem><MenuItem value="Inactivo">Inactivo</MenuItem><MenuItem value="Formulación">Formulación</MenuItem><MenuItem value="Evaluación">Evaluación</MenuItem><MenuItem value="Finalizado">Finalizado</MenuItem></TextField></Grid>
-        <Grid item xs={12} sm={3}><TextField fullWidth label="Buscar por institución" value={filtroInstitucion} onChange={(e) => setFiltroInstitucion(e.target.value)} /></Grid>
+      {/* 🔍 Filtros de búsqueda */}
+      <Grid container spacing={2} className="lista-proyectos-filtros">
+        <Grid item xs={12} sm={3}>
+          <TextField fullWidth label="Buscar por nombre" value={filtroNombre} onChange={(e) => setFiltroNombre(e.target.value)} />
+        </Grid>
+        <Grid item xs={12} sm={3}>
+          <TextField select fullWidth label="Área" value={filtroArea} onChange={(e) => setFiltroArea(e.target.value)}>
+            <MenuItem value="">Todas</MenuItem>
+            <MenuItem value="Ciencias">Ciencias</MenuItem>
+            <MenuItem value="Tecnología">Tecnología</MenuItem>
+            <MenuItem value="Matemáticas">Matemáticas</MenuItem>
+            <MenuItem value="Ciencias Sociales">Ciencias Sociales</MenuItem>
+          </TextField>
+        </Grid>
+        <Grid item xs={12} sm={3}>
+          <TextField select fullWidth label="Estado" value={filtroEstado} onChange={(e) => setFiltroEstado(e.target.value)}>
+            <MenuItem value="">Todos</MenuItem>
+            <MenuItem value="Activo">Activo</MenuItem>
+            <MenuItem value="Inactivo">Inactivo</MenuItem>
+            <MenuItem value="Formulación">Formulación</MenuItem>
+            <MenuItem value="Evaluación">Evaluación</MenuItem>
+            <MenuItem value="Finalizado">Finalizado</MenuItem>
+          </TextField>
+        </Grid>
+        <Grid item xs={12} sm={3}>
+          <TextField fullWidth label="Buscar por institución" value={filtroInstitucion} onChange={(e) => setFiltroInstitucion(e.target.value)} />
+        </Grid>
       </Grid>
 
-      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+      {/* 📤 Exportación PDF */}
+      <Box className="lista-proyectos-toolbar">
         <Button
           variant="contained"
           startIcon={<PictureAsPdfIcon />}
@@ -190,7 +208,8 @@ const ListaProyectosCoordinador = () => {
         </Button>
       </Box>
 
-      <Box sx={{ height: 500, width: '100%' }}>
+      {/* 🧾 Tabla de proyectos */}
+      <Box className="lista-proyectos-grid">
         <DataGrid
           rows={filteredProyectos}
           columns={columns}
@@ -199,35 +218,21 @@ const ListaProyectosCoordinador = () => {
         />
       </Box>
 
+      {/* 📝 Diálogo de cambio de estado */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth>
         <DialogTitle>Cambiar estado del proyecto</DialogTitle>
         <DialogContent>
           <Typography variant="subtitle1" sx={{ mb: 2 }}>
             Proyecto: <strong>{proyectoSeleccionado?.nombreProyecto}</strong>
           </Typography>
-          <TextField
-            fullWidth
-            select
-            label="Nuevo estado"
-            value={nuevoEstado}
-            onChange={(e) => setNuevoEstado(e.target.value)}
-            margin="normal"
-          >
+          <TextField fullWidth select label="Nuevo estado" value={nuevoEstado} onChange={(e) => setNuevoEstado(e.target.value)} margin="normal">
             <MenuItem value="Formulación">Formulación</MenuItem>
             <MenuItem value="Evaluación">Evaluación</MenuItem>
             <MenuItem value="Activo">Activo</MenuItem>
             <MenuItem value="Inactivo">Inactivo</MenuItem>
             <MenuItem value="Finalizado">Finalizado</MenuItem>
           </TextField>
-          <TextField
-            fullWidth
-            label="Observación"
-            value={observacion}
-            onChange={(e) => setObservacion(e.target.value)}
-            margin="normal"
-            multiline
-            rows={3}
-          />
+          <TextField fullWidth label="Observación" value={observacion} onChange={(e) => setObservacion(e.target.value)} margin="normal" multiline rows={3} />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDialog(false)}>Cancelar</Button>
@@ -235,6 +240,7 @@ const ListaProyectosCoordinador = () => {
         </DialogActions>
       </Dialog>
 
+      {/* 📚 Diálogo de historial */}
       <Dialog open={openHistorial} onClose={() => setOpenHistorial(false)} fullWidth maxWidth="md">
         <DialogTitle>Historial de cambios – {tituloHistorial}</DialogTitle>
         <DialogContent>
@@ -257,6 +263,7 @@ const ListaProyectosCoordinador = () => {
         </DialogActions>
       </Dialog>
 
+      {/* 🔍 Detalles del proyecto */}
       <Dialog open={openDetalle} onClose={() => setOpenDetalle(false)} fullWidth>
         <DialogTitle>Detalles del Proyecto</DialogTitle>
         <DialogContent>

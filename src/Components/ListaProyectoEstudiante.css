@@ -1,0 +1,24 @@
+/* ListaProyectoEstudiante.css */
+.lista-estudiante-container {
+  margin-top: 16px;
+  padding: 16px;
+}
+
+.lista-estudiante-filtros {
+  margin-bottom: 16px;
+}
+
+.lista-estudiante-grid {
+  width: 100%;
+  overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+  .lista-estudiante-filtros {
+    text-align: center;
+  }
+
+  .lista-estudiante-grid .MuiDataGrid-root {
+    min-width: 700px;
+  }
+}

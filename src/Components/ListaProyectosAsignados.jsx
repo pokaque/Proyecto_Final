@@ -1,29 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import {
-  collection,
-  query,
-  getDocs
+  collection, query, getDocs
 } from 'firebase/firestore';
 import { db, auth } from '../Firebase/Firebase';
 import { DataGrid } from '@mui/x-data-grid';
 import {
-  Box,
-  Typography,
-  TextField,
-  Grid,
-  Tooltip,
-  IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button
+  Box, Typography, TextField, Grid, Tooltip, IconButton,
+  Dialog, DialogTitle, DialogContent, DialogActions, Button
 } from '@mui/material';
 import DescriptionIcon from '@mui/icons-material/Description';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { useNavigate } from 'react-router-dom';
 import { generarPDF } from './GenerarPdfs.jsx';
+import './ListaProyectoEstudiante.css';
 
 const ListaProyectoEstudiante = () => {
   const navigate = useNavigate();
@@ -80,6 +70,9 @@ const ListaProyectoEstudiante = () => {
       field: 'acciones',
       headerName: 'Acciones',
       flex: 1,
+      minWidth: 200,
+      disableColumnMenu: true,
+      sortable: false,
       renderCell: (params) => (
         <>
           <Tooltip title="Ver detalles">
@@ -112,8 +105,8 @@ const ListaProyectoEstudiante = () => {
   ];
 
   return (
-    <Box sx={{ mt: 2 }}>
-      <Grid container spacing={2} sx={{ mb: 2 }}>
+    <Box className="lista-estudiante-container">
+      <Grid container spacing={2} className="lista-estudiante-filtros">
         <Grid item xs={12} sm={6}>
           <TextField fullWidth label="Buscar por nombre" value={filtroNombre} onChange={(e) => setFiltroNombre(e.target.value)} />
         </Grid>
@@ -122,82 +115,28 @@ const ListaProyectoEstudiante = () => {
         </Grid>
       </Grid>
 
-      <DataGrid
-        rows={filteredProyectos.map(p => ({ ...p, fechaInicio: p.fechaInicio?.toString() }))}
-        columns={columns}
-        pageSize={5}
-        rowsPerPageOptions={[5]}
-        sx={{ height: 500 }}
-      />
+      <Box className="lista-estudiante-grid">
+        <DataGrid
+          rows={filteredProyectos.map(p => ({ ...p, fechaInicio: p.fechaInicio?.toString() }))}
+          columns={columns}
+          pageSize={5}
+          rowsPerPageOptions={[5]}
+          sx={{ minWidth: 700, height: 500 }}
+        />
+      </Box>
 
-      {/* Modal de detalles del proyecto */}
       <Dialog open={openDetalle} onClose={() => setOpenDetalle(false)} fullWidth>
         <DialogTitle>Detalles del Proyecto</DialogTitle>
         <DialogContent>
-          <TextField
-            fullWidth
-            label="Nombre del proyecto"
-            value={detalleProyecto?.nombreProyecto || ''}
-            disabled
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Descripción"
-            value={detalleProyecto?.descripcion || ''}
-            disabled
-            margin="normal"
-            multiline
-            rows={3}
-          />
-          <TextField
-            fullWidth
-            label="Objetivos"
-            value={detalleProyecto?.objetivos || ''}
-            disabled
-            margin="normal"
-            multiline
-            rows={2}
-          />
-          <TextField
-            fullWidth
-            label="Institución"
-            value={detalleProyecto?.institucion || ''}
-            disabled
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Observaciones"
-            value={detalleProyecto?.observaciones || ''}
-            disabled
-            margin="normal"
-            multiline
-            rows={2}
-          />
-          <TextField
-            fullWidth
-            label="Área de conocimiento"
-            value={detalleProyecto?.areaConocimiento || ''}
-            disabled
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Fecha de inicio"
-            value={detalleProyecto?.fechaInicio || ''}
-            disabled
-            margin="normal"
-          />
-          <TextField
-            fullWidth
-            label="Estado"
-            value={detalleProyecto?.estado || ''}
-            disabled
-            margin="normal"
-          />
+          <TextField fullWidth label="Nombre del proyecto" value={detalleProyecto?.nombreProyecto || ''} disabled margin="normal" />
+          <TextField fullWidth label="Descripción" value={detalleProyecto?.descripcion || ''} disabled margin="normal" multiline rows={3} />
+          <TextField fullWidth label="Objetivos" value={detalleProyecto?.objetivos || ''} disabled margin="normal" multiline rows={2} />
+          <TextField fullWidth label="Institución" value={detalleProyecto?.institucion || ''} disabled margin="normal" />
+          <TextField fullWidth label="Observaciones" value={detalleProyecto?.observaciones || ''} disabled margin="normal" multiline rows={2} />
+          <TextField fullWidth label="Área de conocimiento" value={detalleProyecto?.areaConocimiento || ''} disabled margin="normal" />
+          <TextField fullWidth label="Fecha de inicio" value={detalleProyecto?.fechaInicio || ''} disabled margin="normal" />
+          <TextField fullWidth label="Estado" value={detalleProyecto?.estado || ''} disabled margin="normal" />
 
-          {/* Cronograma si existe */}
           {detalleProyecto?.cronogramaURL && (
             <Box mt={2}>
               <Typography>📎 Cronograma:</Typography>

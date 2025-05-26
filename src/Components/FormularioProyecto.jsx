@@ -14,6 +14,7 @@ import { addDoc, collection, Timestamp, getDocs, query, where } from 'firebase/f
 import { db, auth } from '../Firebase/Firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../Firebase/Firebase';
+import './FormularioProyecto.css';
 
 const FormularioProyecto = () => {
     const [nombre, setNombre] = useState('');
@@ -126,7 +127,7 @@ const FormularioProyecto = () => {
     };
 
     return (
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
+        <Box component="form" onSubmit={handleSubmit} className="formulario-proyecto">
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
             {exito && <Alert severity="success" sx={{ mb: 2 }}>{exito}</Alert>}
 
@@ -159,7 +160,7 @@ const FormularioProyecto = () => {
                 />
 
                 {integrantes.map((int, index) => (
-                    <Box key={index} sx={{ display: 'flex', gap: 1, mb: 1, alignItems: 'center' }}>
+                    <Box key={index} className="formulario-proyecto-integrante">
                         <TextField label="Nombre" value={int.nombre} disabled size="small" />
                         <TextField label="ID" value={int.id} disabled size="small" />
                         <TextField label="Grado" value={int.grado} onChange={(e) => handleIntegranteChange(index, 'grado', e.target.value)} size="small" />
@@ -174,3 +175,4 @@ const FormularioProyecto = () => {
 };
 
 export default FormularioProyecto;
+
