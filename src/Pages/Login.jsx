@@ -90,140 +90,218 @@ const Login = () => {
         minHeight: '100vh',
         backgroundImage: 'url("/fondo.png")',
         backgroundPosition: 'center',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        px: 2,
+        backgroundSize: 'cover',
+        backgroundAttachment: { xs: 'scroll', md: 'fixed' }, // Cambiado para móviles
+        position: 'relative',
       }}
     >
-      {/* Capa borrosa encima de la imagen */}
+      {/* Fondo borroso que crece con el contenido */}
       <Box
         sx={{
           position: 'absolute',
-          inset: 0,
+          top: 0,
+          left: 0,
+          right: 0,
+          minHeight: '100%',
+          height: '100%',
           backdropFilter: 'blur(5px)',
           backgroundColor: 'rgba(0, 0, 0, 0.67)',
           zIndex: 1,
         }}
       />
 
-      <Paper
-        elevation={6}
+      {/* Contenedor scrollable con contenido */}
+      <Box
         sx={{
           position: 'relative',
           zIndex: 2,
-          width: '100%',
-          maxWidth: 1000,
           display: 'flex',
-          flexDirection: { xs: 'column', md: 'row' },
-          overflow: 'hidden',
-          borderRadius: 3,
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center', // Centrado en todos los dispositivos
+          px: { xs: 1, sm: 2 },
+          py: { xs: 2, sm: 4, md: 6 },
+          minHeight: '100vh',
         }}
       >
-        <Box
+        <Paper
+          elevation={6}
           sx={{
-            flex: 1,
-            p: 4,
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            color: 'white',
+            width: '100%',
+            maxWidth: { xs: '100%', sm: 500, md: 1000 }, // Responsive maxWidth
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            overflow: 'hidden',
+            borderRadius: { xs: 2, md: 3 }, // Bordes más pequeños en móvil
+            margin: 0, // Sin margen para que se centre perfectamente
           }}
         >
-          <Typography variant="h2" gutterBottom>
-            Bienvenido
-          </Typography>
-          <Typography variant="h5">
-            📲 Inicia sesión para gestionar y hacer seguimiento a los proyectos escolares de investigación.
-          </Typography>
-        </Box>
-
-        <Box sx={{ flex: 1, p: 4, bgcolor: 'white' }}>
-          <Typography variant="h5" gutterBottom>Iniciar sesión</Typography>
-
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-
-          <form onSubmit={handleLogin}>
-            <TextField
-              fullWidth
-              label="Correo electrónico"
-              margin="normal"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setError("");
-              }}
-              required
-            />
-            <TextField
-              fullWidth
-              label="Contraseña"
-              type="password"
-              margin="normal"
-              value={password}
-              onChange={(e) => {
-                setPassword(e.target.value);
-                setError("");
-              }}
-              required
-            />
-            <Button type="submit" variant="contained" fullWidth sx={{ mt: 2 }}>Ingresar</Button>
-          </form>
           <Box
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              mt: 3,
-              mb: 2,
+              flex: 1,
+              p: { xs: 1.5, sm: 2, md: 4 }, // Padding más pequeño en móvil
+              backgroundColor: 'rgba(0, 0, 0, 0.9)',
+              color: 'white',
+              minHeight: { xs: 'auto', md: 'auto' },
             }}
           >
-            <Box sx={{ flex: 1, height: '1px', backgroundColor: 'gray' }} />
-            <Typography sx={{ px: 2, color: 'gray' }}>o</Typography>
-            <Box sx={{ flex: 1, height: '1px', backgroundColor: 'gray' }} />
-          </Box>
-
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            gap: 3,
-            }}
-          >
-            <Button
-              variant="outlined"
-              color="info"
-              onClick={handleGoogleLogin}
+            <Typography
+              variant="h4" // Cambiado de h2 a h4 para móviles
               sx={{
-                borderRadius: 2,
+                fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
+                mb: { xs: 1, md: 2 }
               }}
             >
-              <GoogleIcon />
-            </Button>
-
-            <Button
-              variant="outlined"
-              color="info"
-              onClick={handleGitHubLogin}
+              Bienvenido
+            </Typography>
+            <Typography
+              variant="h6" // Cambiado de h5 a h6
               sx={{
-                borderRadius: 2,
+                fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.25rem' },
+                lineHeight: { xs: 1.3, md: 1.5 }
               }}
             >
-              <GitHubIcon />
-            </Button>
+              📲 Inicia sesión para gestionar y hacer seguimiento a los proyectos escolares de investigación.
+            </Typography>
           </Box>
 
+          <Box sx={{
+            flex: 1,
+            p: { xs: 1.5, sm: 2, md: 4 }, // Padding más pequeño en móvil
+            bgcolor: 'white'
+          }}>
+            <Typography
+              variant="h5"
+              gutterBottom
+              sx={{
+                fontSize: { xs: '1.2rem', sm: '1.4rem', md: '1.5rem' },
+                mb: { xs: 1, md: 2 }
+              }}
+            >
+              Iniciar sesión
+            </Typography>
 
-          <Box mt={2} textAlign="center">
-            <MuiLink href="/registro" underline="hover">¿No tienes cuenta? Regístrate</MuiLink>
+            {error && (
+              <Alert severity="error" sx={{ mb: { xs: 1, md: 2 } }}>
+                {error}
+              </Alert>
+            )}
+
+            <form onSubmit={handleLogin}>
+              <TextField
+                fullWidth
+                label="Correo electrónico"
+                margin="normal"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError("");
+                }}
+                required
+                size="small" // Tamaño más pequeño para móviles
+                sx={{
+                  '& .MuiInputBase-root': {
+                    fontSize: { xs: '0.9rem', md: '1rem' }
+                  }
+                }}
+              />
+              <TextField
+                fullWidth
+                label="Contraseña"
+                type="password"
+                margin="normal"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setError("");
+                }}
+                required
+                size="small" // Tamaño más pequeño para móviles
+                sx={{
+                  '& .MuiInputBase-root': {
+                    fontSize: { xs: '0.9rem', md: '1rem' }
+                  }
+                }}
+              />
+              <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                sx={{
+                  mt: { xs: 1.5, md: 2 },
+                  py: { xs: 1, md: 1.5 },
+                  fontSize: { xs: '0.9rem', md: '1rem' }
+                }}
+              >
+                Ingresar
+              </Button>
+            </form>
+
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                mt: { xs: 2, md: 3 },
+                mb: { xs: 1.5, md: 2 },
+              }}
+            >
+              <Box sx={{ flex: 1, height: '1px', backgroundColor: 'gray' }} />
+              <Typography sx={{ px: 2, color: 'gray', fontSize: { xs: '0.8rem', md: '1rem' } }}>o</Typography>
+              <Box sx={{ flex: 1, height: '1px', backgroundColor: 'gray' }} />
+            </Box>
+
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: { xs: 2, md: 3 },
+              }}
+            >
+              <Button
+                variant="outlined"
+                color="info"
+                onClick={handleGoogleLogin}
+                sx={{
+                  borderRadius: 2,
+                  minWidth: { xs: '45px', md: 'auto' },
+                  p: { xs: 1, md: 1.5 }
+                }}
+              >
+                <GoogleIcon fontSize={window.innerWidth < 600 ? "small" : "medium"} />
+              </Button>
+              <Button
+                variant="outlined"
+                color="info"
+                onClick={handleGitHubLogin}
+                sx={{
+                  borderRadius: 2,
+                  minWidth: { xs: '45px', md: 'auto' },
+                  p: { xs: 1, md: 1.5 }
+                }}
+              >
+                <GitHubIcon fontSize={window.innerWidth < 600 ? "small" : "medium"} />
+              </Button>
+            </Box>
+
+            <Box
+              mt={{ xs: 1.5, md: 2 }}
+              textAlign="center"
+            >
+              <MuiLink
+                href="/registro"
+                underline="hover"
+                sx={{ fontSize: { xs: '0.85rem', md: '1rem' } }}
+              >
+                ¿No tienes cuenta? Regístrate
+              </MuiLink>
+            </Box>
           </Box>
-        </Box>
-      </Paper>
+        </Paper>
+      </Box>
     </Box>
-
   );
+
 };
 
 export default Login;
