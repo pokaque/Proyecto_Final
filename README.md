@@ -49,3 +49,8 @@ Este sistema está diseñado para facilitar la gestión y seguimiento de proyect
 - **Material UI:** Biblioteca de componentes para interfaces modernas y responsivas.
 - **Vercel:** Plataforma para despliegue continuo y hosting del frontend.
 
+## Despliegue en Vercel
+- https://proyecto-final-6pq2l8v7f-d7ronaldos-projects.vercel.app
+
+
+
