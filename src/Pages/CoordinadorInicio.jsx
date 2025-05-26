@@ -79,7 +79,7 @@ export default function CoordinadorInicio(props) {
               <Box
                 sx={{
                   flex: 1,
-                  backgroundImage: 'url("https://cdn.pixabay.com/photo/2024/03/04/11/03/technology-8612403_1280.jpg")',
+                  backgroundImage: 'url("https://diariodelcaqueta.com/wp-content/uploads/2020/11/118616050_1179924225724878_5318037865065320266_n.jpg")',
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   minHeight: 300,
